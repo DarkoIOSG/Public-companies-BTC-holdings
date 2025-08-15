@@ -1,0 +1,5 @@
+firecrawl
+pandas
+python-dotenv
+tenacity
+streamlit
