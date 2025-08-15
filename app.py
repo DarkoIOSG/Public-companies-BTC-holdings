@@ -70,7 +70,7 @@ df_changes["BTC Change"] = pd.to_numeric(df_changes["BTC Change"], errors='coerc
 df_changes = df_changes[df_changes["BTC Change"].notna()]
 
 # Get the most recent date for each entity and sort by BTC Change in descending order
-latest_changes = df_changes.groupby("Entity").last().sort_values("BTC Change", ascending=False)
+latest_changes = df_changes.groupby("Entity").last().reset_index().sort_values("BTC Change", ascending=False)
 
 # Display top companies by BTC Change
 change_display_cols = ["Entity", "Symbol:Exchange", "# of BTC", "BTC Change", "Scrape Date"]
