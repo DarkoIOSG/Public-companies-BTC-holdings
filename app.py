@@ -61,6 +61,21 @@ display_cols = ["Entity", "Symbol:Exchange", "# of BTC", "% of 21m", "Scrape Dat
 
 st.dataframe(df_selected[display_cols], use_container_width=True)
 
+# ===== 6.5. Show BTC Change Table =====
+st.subheader("📊 Companies by BTC Change (Biggest Changes)")
+
+# Filter out rows where BTC Change is "NEW" or NaN, and convert to numeric for sorting
+df_changes = df.copy()
+df_changes["BTC Change"] = pd.to_numeric(df_changes["BTC Change"], errors='coerce')
+df_changes = df_changes[df_changes["BTC Change"].notna()]
+
+# Get the most recent date for each entity and sort by BTC Change in descending order
+latest_changes = df_changes.groupby("Entity").last().sort_values("BTC Change", ascending=False)
+
+# Display top companies by BTC Change
+change_display_cols = ["Entity", "Symbol:Exchange", "# of BTC", "BTC Change", "Scrape Date"]
+st.dataframe(latest_changes[change_display_cols].head(20), use_container_width=True)
+
 # ===== 7. Historical Charts =====
 st.subheader("📈 Total BTC Over Time")
 historical_totals = df.groupby("Scrape Date")["# of BTC"].sum().reset_index()
