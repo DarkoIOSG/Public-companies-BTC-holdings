@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+from app_build import BUILD_TS  # ensures code change triggers a rebuild
 
 # ===== 1. Page Setup =====
 st.set_page_config(

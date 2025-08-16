@@ -2,8 +2,8 @@ name: Daily Bitbo Update
 
 on:
   schedule:
-    - cron: "0 6 * * *"  # Runs every day at 06:00 UTC
-  workflow_dispatch:     # Allows manual run
+    - cron: "0 6 * * *"  # Every day at 06:00 UTC
+  workflow_dispatch:       # Manual run
 
 jobs:
   update-data:
@@ -13,12 +13,12 @@ jobs:
       - name: Check out repo
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.IOSG_TOKEN }}  # So we can push changes
+          token: ${{ secrets.IOSG_TOKEN }}  # must have repo:write to push
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
       - name: Install dependencies
         run: pip install -r requirements.txt
@@ -28,11 +28,40 @@ jobs:
         env:
           FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
 
-
-      - name: Commit and push updated CSV
+      # Stage the CSV and detect whether anything really changed
+      - name: Detect CSV changes
+        id: changes
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add bitbo_historical.csv
-          git commit -m "Daily update: $(date +'%Y-%m-%d')"
+          if git diff --staged --quiet; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+
+      # If CSV changed, bump the sentinel file to force a redeploy
+      - name: Bump app build (force redeploy)
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          python - <<'PY'
+          from datetime import datetime, timezone
+          ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S %Z")
+          with open("app_build.py", "w", encoding="utf-8") as f:
+              f.write(f'BUILD_TS = "{ts}"\n')
+          PY
+
+      - name: Commit and push
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add bitbo_historical.csv app_build.py
+          git commit -m "Data refresh + force redeploy ($(date -u +'%Y-%m-%d %H:%M:%S UTC'))"
           git push origin main
+
+      # Optional: wake the app so users see fresh data immediately
+      - name: Warm up app (optional)
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          curl -sS -m 20 https://public-companies-btc-holdings-iosg-ventures.streamlit.app/ > /dev/null || true
+
