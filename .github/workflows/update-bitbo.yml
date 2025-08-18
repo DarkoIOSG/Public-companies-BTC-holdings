@@ -27,6 +27,8 @@ jobs:
         run: python scrape_bitbo.py
         env:
           FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}  # This is a string, not an integer
 
       # Stage the CSV and detect whether anything really changed
       - name: Detect CSV changes
