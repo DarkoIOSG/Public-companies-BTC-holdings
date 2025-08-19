@@ -56,7 +56,7 @@ def build_change_message(changes_df: pd.DataFrame, as_of_date) -> str:
         direction = "bought ➕" if change > 0 else "sold ➖"
         vc_part = f" (≈ ${value_change:,.0f})" if pd.notna(value_change) else ""
         lines.append(
-            f"• <b>{entity}</b> {direction} {change:,.0f} BTC{vc_part}. "
+            f"• <b>{entity}</b> {direction} {change:,.0f} BTC. "
             f"New total: {total:,.0f} BTC."
         )
 
