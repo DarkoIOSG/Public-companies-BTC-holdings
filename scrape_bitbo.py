@@ -192,4 +192,4 @@ def update_historical_data(api_key: str, csv_path: str, min_abs_btc_to_alert: fl
 if __name__ == "__main__":
     df_hist = update_historical_data(API_KEY, CSV_PATH, min_abs_btc_to_alert=1.0)
     # Print tail for CI logs
-    print(df_hist.tail())
+    #print(df_hist.tail())
